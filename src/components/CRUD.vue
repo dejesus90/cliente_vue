@@ -99,7 +99,7 @@
             >
               <v-card>
                 <v-card-title>
-                  <span class="text-h5">Upload File CSV</span>
+                  <span class="text-h5">Upload File XLSX</span>
                 </v-card-title>
                 <v-card-text>
                   <v-container>
@@ -107,8 +107,8 @@
                       <v-col cols="12">
                         <v-file-input
                         v-model="fileUpload"
-                        placeholder="upload File cvs"
-                        accept="text/csv"
+                        placeholder="upload File xlsx"
+                        accept="csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
                         prepend-icon=""
                         outlined
                         :clearable="true"
@@ -131,6 +131,7 @@
                   <v-btn
                     color="blue darken-1"
                     text
+                    :disabled="disabledbtn"
                     @click="uploadFile()"
                   >
                     Upload
@@ -253,6 +254,7 @@
   export default {
     data: () => ({
       // return {
+        disabledbtn: false,
         fileUpload:null,
         dialogUpload: false,
         dialogDelete: false,
@@ -299,8 +301,12 @@
         const formData = new FormData();
         formData.append('file', this.fileUpload); ///archivo ajunto
         await axios
-        .post("http://localhost:3000/api/fileUpload", formData)
+        .post(API_URL+"fileUpload", formData)
         .then(res => {
+          console.log('res',res);
+          if(res.data.response){
+            this.listUsers = res.data.response;
+          }
           this.dialogUpload = false;
         })
         .catch(err => {
@@ -314,12 +320,13 @@
       },
       async deleteItem(){
         await axios
-        .post("http://localhost:3000/api/deleteUser", {id:this.info.id})
+        .post(API_URL+'deleteUser', {id:this.info.id})
         .then(res => {
           this.dialogDelete = false;
           // eliminamos registro
           let userList = this.listUsers.filter(user => user.id != this.info.id);
           this.listUsers = userList;
+          this.info={};
         })
         .catch(err => {
           console.log(err);
@@ -329,17 +336,28 @@
         console.log(['item',this.info,this.edit,this.newUser]);
         if(this.newUser){ // nuevo usuario
           await axios
-          .post("http://localhost:3000/api/createUser", this.info)
+          .post(API_URL+'createUser', this.info)
           .then(res => {
             console.log(res);
             this.dialogForm = false;
             this.listUsers = res.data.response;
+            this.info={};
           })
           .catch(err => {
             console.log(err);
           });
         }else{ // editar usuario
-
+          await axios
+          .post(API_URL+'EditUser', this.info)
+          .then(res => {
+            console.log(res);
+            this.dialogForm = false;
+            this.listUsers = res.data.response;
+            this.info={};
+          })
+          .catch(err => {
+            console.log(err);
+          });
         }
       },
       async editUser(item){

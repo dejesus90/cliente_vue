@@ -11,7 +11,7 @@ const routes = [
   //   component: Home
   // },
   {
-    path: '/CRUD',
+    path: '/',
     name: 'CRUD',
     component: () => import('../components/CRUD'),
     meta: { transition: 'zoom' },
